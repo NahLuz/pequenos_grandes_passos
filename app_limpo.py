@@ -7,6 +7,18 @@ from unidecode import unidecode
 
 st.set_page_config(page_title="Pequenos Grandes PASSOS", layout="wide")
 
+@st.cache_data
+def carregar_dados():
+    df = pd.read_excel("dados.xlsx", header=1)
+    df.columns = df.columns.str.strip()
+
+    df["Categoria"] = df["Categoria"].astype(str).apply(
+        lambda x: unidecode(x.strip().lower()))
+    df["Preço"] = df["Preço"].astype(str).str.replace(
+        "R$", "").str.replace(",", ".").str.replace(" ", "").astype(float)
+
+    return df
+
 # 🔹 ESTILO PERSONALIZADO (opcional e elegante!)
 st.markdown("""
     <style>
@@ -31,8 +43,9 @@ st.markdown("""
 st.image("img_futuro/banner_pgpassos.png", use_container_width=True)
 
 # LEITURA E PREPARO DOS DADOS
-df = pd.read_excel("dados.xlsx", header=1)
-df.columns = df.columns.str.strip()
+with st.spinner("⏳ Carregando dados... isso pode levar alguns segundos se o app estiver acordando!"):
+    df = carregar_dados()
+    df.columns = df.columns.str.strip()
 
 df["Categoria"] = df["Categoria"].astype(str).apply(
     lambda x: unidecode(x.strip().lower()))
@@ -170,29 +183,31 @@ elif aba == "🛍️ Produtos":
     produtos = produtos.drop_duplicates(subset=["Nome Simplificado"])
 
     if produtos.empty:
-        st.warning(
-            "Nenhum produto disponível. Vá até a aba **Análises** e personalize sua vitrine.")
+        st.warning("Nenhum produto disponível. Vá até a aba **Análises** e personalize sua vitrine.")
     else:
         st.subheader("🧾 Lista de Produtos")
         for _, row in produtos.iterrows():
             col1, col2 = st.columns([1, 6])
             with col1:
-                nome_img = row["Imagem"] if "Imagem" in row and pd.notna(
-                    row["Imagem"]) else "placeholder.png"
+                nome_img = row["Imagem"] if pd.notna(row.get("Imagem")) else "placeholder.png"
                 st.image(f"img_futuro/{nome_img}", width=80)
             with col2:
-                nome = row["Nome Simplificado"]
-                preco = f"R$ {float(row['Preço']):.2f}"
-                genero = row["Gênero"] if "Gênero" in row and pd.notna(
-                    row["Gênero"]) else ""
-                if pd.notna(row["Link"]):
+                nome = row.get("Nome Simplificado", "Produto")
+                preco = f"R$ {float(row['Preço']):.2f}" if pd.notna(row.get("Preço")) else "Preço indisponível"
+                genero = row.get("Gênero", "")
+
+                link = str(row.get("Link", "")).strip()
+
+                if link.startswith("http"):
                     st.markdown(
-                        f"<strong><a href='{row['Link']}' target='_blank'>{nome}</a></strong><br>{genero} — {preco}",
+                        f"<strong><a href='{link}' target='_blank'>{nome}</a></strong><br>{genero} — {preco}",
                         unsafe_allow_html=True
                     )
                 else:
                     st.markdown(
-                        f"**{nome}**<br>{genero} — {preco}", unsafe_allow_html=True)
+                        f"**{nome}**<br>{genero} — {preco}",
+                        unsafe_allow_html=True
+                    )
 
 # ABA INÍCIO
 elif aba == "🏠 Início":

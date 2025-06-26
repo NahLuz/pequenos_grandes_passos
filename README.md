@@ -1,5 +1,7 @@
 # Pequenos Grandes PASSOS 🛍️👣
 
+🚀 Acesse o aplicativo agora: https://pequenos-grandes-passos.onrender.com/ 
+
 Aplicativo interativo de análise e visualização de produtos da loja Shopee, desenvolvido como parte do Bootcamp de Análise de Dados da TripleTen.
 
 O projeto simula uma vitrine digital que permite ao usuário explorar categorias, aplicar filtros de preço, visualizar métricas e gráficos, além de acessar produtos com links diretos para compra.
